@@ -15,15 +15,12 @@ Please note that this project is still a work in progress, and much of the funct
 
 - The **detail view** is not yet implemented.  
 - The **Coordinator** pattern for navigation, which helps isolate navigation logic and modularize the app's flow, has not been integrated yet.  
-- **Unit testing** has not been added.
+- **Unit testing** has not been added.  
+- The **UI** is still very unpolished and lacks proper styling and consistency across screens.  
+- **Persistence** is not implemented yet; adding caching or persistence (e.g., **UserDefaults** or **CoreData**) would be beneficial for storing historical data or user preferences as the app grows.
 
 ### Architecture  
 The app follows a simplified version of the **MVVM** (Model-View-ViewModel) pattern, helping to separate concerns between the UI and data layers for cleaner and more maintainable code.
-
-### Future Considerations  
-Given the lightweight nature of this app and the absence of a live API, caching and data persistence were not implemented. However, as the app grows, it would benefit from:
-- Integrating native persistence solutions like **UserDefaults** or **CoreData** to store data locally.
-- Using third-party libraries like **Kingfisher** for image caching to improve performance and user experience.
 
 ### UI Implementation  
 I used **storyboards** for the UI design, which provides a clear, visual structure for the app. While programmatic UI might be more suitable for collaborative environments, storyboards were a better fit for this project’s scope.
