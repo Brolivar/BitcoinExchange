@@ -17,6 +17,8 @@ enum Currency: String {
 class AppURL {
 
     private static let baseURL = "https://api.coindesk.com/v1/bpi/historical/close.json"
+    private static let currentPriceURL = "https://api.coindesk.com/v1/bpi/currentprice.json"
+
 
     static func bitcoinPriceURL(for currency: Currency) -> URL? {
         let endDate = Date()
@@ -31,5 +33,9 @@ class AppURL {
         let urlString = "\(baseURL)?start=\(startString)&end=\(endString)&currency=\(currency.rawValue)"
 
         return URL(string: urlString)
+    }
+
+    static func currentBitcoinPriceURL() -> URL? {
+        return URL(string: currentPriceURL)
     }
 }

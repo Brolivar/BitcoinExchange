@@ -6,14 +6,28 @@
 //
 import Foundation
 
+// This would normally be abstracted into a protocol
 class BitcoinPriceViewModel {
 
-    // TODO: - NetworkManager should be inyected from (future) Coordinator
+    // MARK: - Properties
+
+    // NetworkManager should be inyected from (future) Coordinator
     private let networkManager = NetworkManager()
 
     // Datasource to handle each bitcoin price (we use date to identify it)
     var bitcoinPrices: [BitcoinPrice] = []
+    var currentPrice: BitcoinPrice? {
+        didSet {
+            self.onCurrentPriceUpdate?()
+        }
+    }
+    // Update the current price periodically
+    private var timer: Timer?
+    private let updateFrequency: TimeInterval = 60
+
+    // Data Bindings
     var onPricesUpdated: (() -> Void)?
+    var onCurrentPriceUpdate: (() -> Void)?
     var onError: ((String) -> Void)?
 
     func fetchPrices() {
@@ -79,5 +93,43 @@ class BitcoinPriceViewModel {
 
             self.onPricesUpdated?()
         }
+    }
+
+    // Fetch the current price of bitcoin
+    func fetchCurrentPrice() {
+        guard let url = AppURL.currentBitcoinPriceURL() else {
+            return
+        }
+
+        self.networkManager.fetchCurrentBitcoinPrices(from: url) { [weak self] result in
+            switch result {
+            case .success(let responseModel):
+                let usdPrice = responseModel.bpi[Currency.usd.rawValue]?.rate_float ?? 0
+                let eurPrice = responseModel.bpi[Currency.eur.rawValue]?.rate_float ?? 0
+                let gbpPrice = responseModel.bpi[Currency.gbp.rawValue]?.rate_float ?? 0
+
+                self?.currentPrice = BitcoinPrice(
+                    date: responseModel.time.updated,
+                    usdPrice: usdPrice,
+                    eurPrice: eurPrice,
+                    gbpPrice: gbpPrice
+                )
+            case .failure(let error):
+                self?.onError?(error.localizedDescription)
+            }
+        }
+    }
+
+    // Start the timer to fetch the current price every 30 seconds
+    func startPriceUpdateTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: self.updateFrequency, repeats: true) { [weak self] _ in
+            self?.fetchCurrentPrice()
+        }
+    }
+
+    // Stop the timer when no longer needed
+    func stopPriceUpdateTimer() {
+        timer?.invalidate()
+        timer = nil
     }
 }

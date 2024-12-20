@@ -42,16 +42,27 @@ class BitcoinPriceViewController: UIViewController {
 
     // MARK: - Properties
     @IBOutlet private var tableView: UITableView!
+    // Two indicators - one for current price and another for the past
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet private var currentPriceActivityIndicator: UIActivityIndicatorView!
+    @IBOutlet private var currentPriceLabel: UILabel!
 
     // Ideally this would be inyected by a coordinator
     private let viewModel = BitcoinPriceViewModel()
 
+    // MARK: - Initialisation
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupTableView()
         self.activityIndicator.startAnimating()
         self.setupDataBinds()
+        self.viewModel.fetchPrices()
+        self.viewModel.fetchCurrentPrice()
+        self.viewModel.startPriceUpdateTimer() // Start the timer to update the current price
+    }
+
+    deinit {
+        viewModel.stopPriceUpdateTimer() // Stop the timer when the view controller is deallocated
     }
 
     func setupTableView() {
@@ -59,16 +70,38 @@ class BitcoinPriceViewController: UIViewController {
         self.tableView.delegate = self
     }
 
+    func startIndicators() {
+        self.activityIndicator.startAnimating()
+        self.currentPriceActivityIndicator.startAnimating()
+    }
+
     // Set up the communication with the View Model
     func setupDataBinds() {
         self.viewModel.onPricesUpdated = { [weak self] in
-            self?.activityIndicator.stopAnimating()
+            DispatchQueue.main.async {
+                self?.activityIndicator.stopAnimating()
+            }
             self?.tableView.reloadData()
         }
+
+        self.viewModel.onCurrentPriceUpdate = { [weak self] in
+            DispatchQueue.main.async {
+                self?.currentPriceActivityIndicator.stopAnimating()
+            }
+            self?.updateCurrentPriceLabel()
+        }
+
         self.viewModel.onError = { [weak self] error in
             self?.showError(error)
         }
-        self.viewModel.fetchPrices()
+    }
+
+    func updateCurrentPriceLabel() {
+        guard let currentPrice = viewModel.currentPrice else { return }
+        let formattedPrice = String(format: "%.2f", currentPrice.eurPrice)
+        DispatchQueue.main.async {
+            self.currentPriceLabel.text = "\(formattedPrice)€"
+        }
     }
 
     func showError(_ message: String) {
