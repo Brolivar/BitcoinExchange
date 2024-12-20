@@ -1,6 +1,6 @@
 # Bitcoin Exchange
 
-MedalBox is a simple app that showcases the Bitcoin price for the past 14 days, along with the current price, which updates in real time every 60 seconds.
+Bitcoin Exchange is a simple app that showcases the Bitcoin price for the past 14 days, along with the current price, which updates in real time every 60 seconds.
 
 ## Key Features & Design Considerations
 
